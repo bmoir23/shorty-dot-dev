@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Deploy AI Agent - Shrty.dev</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<style>
+			body {
+				background: #f8fafc;
+				font-family: 'Outfit', sans-serif;
+			}
+
+			h1,
+			h2,
+			h3,
+			h4,
+			h5,
+			h6 {
+				font-family: 'Lato', sans-serif;
+				font-weight: 900;
+			}
+			.deploy-container {
+				max-width: 800px;
+				margin: 2rem auto;
+				padding: 2rem;
+				background: white;
+				border-radius: 12px;
+				box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			}
+
+			.form-group {
+				margin-bottom: 1.5rem;
+			}
+
+			.form-group label {
+				display: block;
+				margin-bottom: 0.5rem;
+				font-weight: 600;
+				color: #374151;
+			}
+
+			.form-group input,
+			.form-group select,
+			.form-group textarea {
+				width: 100%;
+				padding: 0.75rem;
+				border: 1px solid #d1d5db;
+				border-radius: 6px;
+				font-size: 1rem;
+			}
+
+			.form-group textarea {
+				min-height: 120px;
+				resize: vertical;
+			}
+
+			.deploy-btn {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				padding: 1rem 2rem;
+				border: none;
+				border-radius: 8px;
+				font-size: 1.1rem;
+				font-weight: 600;
+				cursor: pointer;
+				transition: transform 0.2s;
+				width: 100%;
+			}
+
+			.deploy-btn:hover {
+				transform: translateY(-2px);
+			}
+
+			.deploy-btn:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+				transform: none;
+			}
+
+			.pro-badge {
+				background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+				color: white;
+				padding: 0.25rem 0.75rem;
+				border-radius: 20px;
+				font-size: 0.8rem;
+				font-weight: 600;
+				margin-left: 0.5rem;
+			}
+
+			.model-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 1rem;
+				margin-top: 0.5rem;
+			}
+
+			.model-card {
+				border: 2px solid #e5e7eb;
+				border-radius: 8px;
+				padding: 1rem;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.model-card:hover {
+				border-color: #667eea;
+			}
+
+			.model-card.selected {
+				border-color: #667eea;
+				background: #f8faff;
+			}
+
+			.deployment-result {
+				margin-top: 2rem;
+				padding: 1.5rem;
+				border-radius: 8px;
+				background: #f0f9ff;
+				border: 1px solid #0ea5e9;
+			}
+
+			.deployment-url {
+				font-family: monospace;
+				background: #1f2937;
+				color: #10b981;
+				padding: 0.5rem;
+				border-radius: 4px;
+				margin: 0.5rem 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="deploy-container">
+			<h1>Deploy AI Agent <span class="pro-badge">PRO</span></h1>
+			<p>Create and deploy your own AI agent with custom models and prompts. Available for Pro, Teams, and Ultra plans.</p>
+
+			<form id="deployForm">
+				<div class="form-group">
+					<label for="agentName">Agent Name</label>
+					<input type="text" id="agentName" name="name" required placeholder="My Customer Support Bot" />
+				</div>
+
+				<div class="form-group">
+					<label for="agentDescription">Description</label>
+					<input
+						type="text"
+						id="agentDescription"
+						name="description"
+						required
+						placeholder="Helpful customer support agent for my business"
+					/>
+				</div>
+
+				<div class="form-group">
+					<label>AI Model Provider</label>
+					<div class="model-grid">
+						<div class="model-card" data-provider="workers-ai" data-model="@hf/nousresearch/hermes-2-pro-mistral-7b">
+							<h4>Workers AI</h4>
+							<p>Hermes 2 Pro Mistral 7B</p>
+							<small>Free • Fast • Reliable</small>
+						</div>
+						<div class="model-card" data-provider="openrouter" data-model="microsoft/wizardlm-2-8x22b">
+							<h4>OpenRouter</h4>
+							<p>WizardLM 2 8x22B</p>
+							<small>$0.63/1M tokens</small>
+						</div>
+						<div class="model-card" data-provider="openrouter" data-model="meta-llama/llama-3.1-8b-instruct:free">
+							<h4>OpenRouter</h4>
+							<p>Llama 3.1 8B</p>
+							<small>Free • Open Source</small>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="systemPrompt">System Prompt</label>
+					<textarea id="systemPrompt" name="systemPrompt" required placeholder="You are a helpful AI assistant that..."></textarea>
+				</div>
+
+				<div class="form-group">
+					<label for="customDomain">Custom Domain (Optional)</label>
+					<input type="text" id="customDomain" name="customDomain" placeholder="my-agent.example.com" />
+				</div>
+
+				<button type="submit" class="deploy-btn" id="deployBtn">🚀 Deploy Agent Now</button>
+			</form>
+
+			<div id="deploymentResult" class="deployment-result" style="display: none">
+				<h3>🎉 Agent Deployed Successfully!</h3>
+				<p><strong>Agent ID:</strong> <span id="agentId"></span></p>
+				<p><strong>Deployment URL:</strong></p>
+				<div class="deployment-url" id="deploymentUrl"></div>
+				<p><strong>API Endpoint:</strong></p>
+				<div class="deployment-url" id="apiEndpoint"></div>
+				<p>Your agent is now live and ready to receive chat requests!</p>
+			</div>
+		</div>
+
+		<script>
+			let selectedModel = null;
+			let selectedProvider = null;
+
+			// Model selection
+			document.querySelectorAll('.model-card').forEach((card) => {
+				card.addEventListener('click', () => {
+					document.querySelectorAll('.model-card').forEach((c) => c.classList.remove('selected'));
+					card.classList.add('selected');
+					selectedModel = card.dataset.model;
+					selectedProvider = card.dataset.provider;
+				});
+			});
+
+			// Form submission
+			document.getElementById('deployForm').addEventListener('submit', async (e) => {
+				e.preventDefault();
+
+				if (!selectedModel || !selectedProvider) {
+					alert('Please select an AI model');
+					return;
+				}
+
+				const deployBtn = document.getElementById('deployBtn');
+				deployBtn.disabled = true;
+				deployBtn.textContent = '🚀 Deploying...';
+
+				const formData = new FormData(e.target);
+				const config = {
+					name: formData.get('name'),
+					description: formData.get('description'),
+					model: selectedModel,
+					provider: selectedProvider,
+					systemPrompt: formData.get('systemPrompt'),
+					customDomain: formData.get('customDomain') || undefined,
+				};
+
+				try {
+					const response = await fetch('/api/agents/deploy', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-User-Tier': 'pro', // This would come from auth
+							'X-User-ID': 'demo-user-123', // This would come from auth
+						},
+						body: JSON.stringify(config),
+					});
+
+					const result = await response.json();
+
+					if (response.ok) {
+						document.getElementById('agentId').textContent = result.agent.id;
+						document.getElementById('deploymentUrl').textContent = result.deploymentUrl;
+						document.getElementById('apiEndpoint').textContent = window.location.origin + result.endpoint;
+						document.getElementById('deploymentResult').style.display = 'block';
+						e.target.style.display = 'none';
+					} else {
+						alert(result.error || 'Deployment failed');
+					}
+				} catch (error) {
+					alert('Deployment failed: ' + error.message);
+				} finally {
+					deployBtn.disabled = false;
+					deployBtn.textContent = '🚀 Deploy Agent Now';
+				}
+			});
+
+			// Select first model by default
+			document.querySelector('.model-card').click();
+		</script>
+	</body>
+</html>

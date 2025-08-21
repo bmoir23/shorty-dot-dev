@@ -78,7 +78,11 @@ dataset = "link_clicks"
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
 [[kv_namespaces]]
 binding = "URLS"
-id = "d76837429fda4e0bbeb25ab742880a40"
+id = "a0be81bd24494a1fb699ac882dfe3794"
+
+[[kv_namespaces]]
+binding = "AGENTS"
+id = "2944c213b749455898a33234b9b930b5"
 
 # Bind an mTLS certificate. Use to present a client certificate when communicating with another service.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#mtls-certificates

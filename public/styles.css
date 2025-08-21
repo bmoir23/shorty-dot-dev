@@ -1,14 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@900&family=Outfit:wght@400;500;600;700&display=swap');
+
 body {
     margin: 0;
-    font-family: 'Press Start 2P', cursive;
-    background-color: #f0f0f0;
-    color: #000;
-    image-rendering: pixelated;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    background-color: #f8fafc;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 1rem;
 }
 
 .chat-container {
@@ -113,7 +118,7 @@ body {
     color: #000;
 }
 
-/* New styles for the index.html page */
+/* Modern styles for the index.html page */
 .center-container {
     display: flex;
     flex-direction: column;
@@ -121,30 +126,43 @@ body {
     align-items: center;
     height: 100vh;
     text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
 
 .center-container h1 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 900;
     font-size: 5rem;
     margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .center-container p {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
     font-size: 1.5rem;
-    margin: 0;
-    color: #ff6347;
+    margin: 1rem 0;
+    opacity: 0.9;
 }
 
 footer {
-    margin-top: 20px;
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
 }
 
 footer a {
-    color: #ff6347;
+    color: rgba(255,255,255,0.9);
     text-decoration: none;
+    transition: color 0.2s;
 }
 
 footer a:hover {
+    color: white;
     text-decoration: underline;
 }

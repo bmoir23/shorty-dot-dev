@@ -1,3 +1,5 @@
+import app from ".";
+
 app.post('/chat', async (c) => {
 	const payload = await c.req.json();
 	const messages = payload.messages || [];

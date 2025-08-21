@@ -5,10 +5,54 @@ import { stripIndents } from 'common-tags';
 import { streamText } from 'hono/streaming';
 import { events } from 'fetch-event-stream';
 import { coerceBoolean } from 'cloudflare/core.mjs';
+import { AgentService } from './services/agentService';
+import { canUseFeature } from './services/planService';
+import { AgentDeploymentConfig } from './types';
 
 type Bindings = {
 	[key in keyof CloudflareBindings]: CloudflareBindings[key];
 };
+
+// Enhanced URL creation with additional features
+async function createEnhancedUrl(env: Bindings, slug: string, url: string, options: {
+	override?: boolean;
+	expiresAt?: string;
+	password?: string;
+	customDomain?: string;
+	userId?: string;
+} = {}) {
+	const existing = await env.URLS.get(slug);
+
+	if (existing !== null && !options.override) {
+		const existingData = JSON.parse(existing);
+		return {
+			slug,
+			url: existingData.url,
+			shorty: `/${slug}`,
+			message: `Slug ${slug} already exists. Set override to true to update.`,
+		};
+	}
+
+	const linkData = {
+		url,
+		createdAt: new Date().toISOString(),
+		expiresAt: options.expiresAt,
+		password: options.password,
+		customDomain: options.customDomain,
+		userId: options.userId,
+		clicks: 0,
+		isActive: true,
+	};
+
+	await env.URLS.put(slug, JSON.stringify(linkData));
+
+	return {
+		slug,
+		url,
+		shorty: `/${slug}`,
+		...linkData
+	};
+}
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -23,9 +67,9 @@ app.use('/api/*', (c, next) => {
 // Generate a signed token
 app.post("/tmp/token", async (c) => {
 	const payload = await c.req.json();
-	console.log({payload});
+	console.log({ payload });
 	const token = await sign(payload, c.env.JWT_SECRET);
-	return c.json({token});
+	return c.json({ token });
 });
 
 async function addUrl(env: Bindings, slug: string, url: string, override: boolean = false) {
@@ -72,6 +116,100 @@ app.post('/api/report/:slug', async (c) => {
 	const sql = `SELECT blob4 as 'country', COUNT() as 'total' FROM link_clicks WHERE blob1='${c.req.param('slug')}' GROUP BY country`;
 	const results = await queryClicks(c.env, sql);
 	return c.json(results);
+});
+
+// Enhanced URL creation endpoint
+app.post('/api/url/enhanced', async (c) => {
+	const payload = await c.req.json();
+	const userTier = c.req.header('X-User-Tier') || 'free';
+
+	// Check feature permissions
+	if (payload.password && !canUseFeature(userTier, 'passwordProtection')) {
+		return c.json({ error: 'Password protection requires Pro plan or higher' }, 403);
+	}
+
+	if (payload.customDomain && !canUseFeature(userTier, 'customDomains')) {
+		return c.json({ error: 'Custom domains require Basic plan or higher' }, 403);
+	}
+
+	const result = await createEnhancedUrl(c.env, payload.slug, payload.url, {
+		override: payload.override,
+		expiresAt: payload.expiresAt,
+		password: payload.password,
+		customDomain: payload.customDomain,
+		userId: payload.userId,
+	});
+
+	return c.json(result);
+});
+
+// AI Agent Deployment Endpoints (Pro+ only)
+app.post('/api/agents/deploy', async (c) => {
+	const userTier = c.req.header('X-User-Tier') || 'free';
+	const userId = c.req.header('X-User-ID');
+
+	if (!canUseFeature(userTier, 'aiAgentDeployment')) {
+		return c.json({
+			error: 'AI Agent deployment requires Pro plan or higher',
+			upgradeUrl: '/pricing'
+		}, 403);
+	}
+
+	if (!userId) {
+		return c.json({ error: 'User ID required' }, 401);
+	}
+
+	const config: AgentDeploymentConfig = await c.req.json();
+	const agentService = new AgentService(c.env);
+
+	try {
+		const agent = await agentService.deployAgent(config, userId);
+		return c.json({
+			success: true,
+			agent,
+			deploymentUrl: agent.deploymentUrl,
+			endpoint: agent.endpoint
+		});
+	} catch (error) {
+		return c.json({ error: 'Failed to deploy agent' }, 500);
+	}
+});
+
+app.get('/api/agents', async (c) => {
+	const userId = c.req.header('X-User-ID');
+	if (!userId) {
+		return c.json({ error: 'User ID required' }, 401);
+	}
+
+	const agentService = new AgentService(c.env);
+	const agents = await agentService.getUserAgents(userId);
+	return c.json({ agents });
+});
+
+app.post('/api/agents/:agentId/chat', async (c) => {
+	const agentId = c.req.param('agentId');
+	const { messages } = await c.req.json();
+
+	const agentService = new AgentService(c.env);
+
+	try {
+		const response = await agentService.chatWithAgent(agentId, messages);
+		return c.json(response);
+	} catch (error) {
+		return c.json({ error: error.message }, 400);
+	}
+});
+
+app.get('/api/agents/:agentId', async (c) => {
+	const agentId = c.req.param('agentId');
+	const agentService = new AgentService(c.env);
+
+	const agent = await agentService.getAgent(agentId);
+	if (!agent) {
+		return c.json({ error: 'Agent not found' }, 404);
+	}
+
+	return c.json({ agent });
 });
 
 // TODO: Remove temporary hack

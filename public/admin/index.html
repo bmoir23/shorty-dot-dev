@@ -4,9 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shorty Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f8fafc;
+        }
+        
+        h1 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            height: 90vh;
+            width: 90vw;
+            max-width: 1200px;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
+        }
+        
+        .chat-messages {
+            background: #f8fafc;
+            border: none;
+        }
+        
+        .chat-input {
+            border-top: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .chat-input input {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+        
+        .chat-input button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .message {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .message.assistant {
+            background: #f0f9ff;
+            color: #1e293b;
+            border-color: #0ea5e9;
+        }
+        
+        .message.tool {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #f59e0b;
+        }
+    </style>
 </head>
 <body>
     <div class="chat-container">
